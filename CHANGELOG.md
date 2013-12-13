@@ -1,5 +1,25 @@
 ## Version History
 
+#### 20131211
+* Fix extracting topaz-dev archive
+* Auto-detect and link to Homebrew's readline
+* Fix irb, rake, rdoc, ri for rbx-2.2.1
+
+#### 20131206
+* Added a definition for JRuby 1.7.9
+
+#### 20131122.1
+* Fix typo in 2.1.0-preview2 definition
+
+#### 20131122
+* Added a definition for 1.9.3-p484
+* Added a definition for 2.0.0-p353
+* Added a definition for 2.1.0-preview2
+
+#### 20131115
+* Added a definition for JRuby 1.7.7
+* Added a definition for JRuby 1.7.8
+
 #### 20131030
 * Install the Rubinius bundle in isolation
 * Fix false "BUILD FAILED" message when installing Rubinius
