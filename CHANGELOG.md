@@ -1,14 +1,29 @@
 ## Version History
 
+#### 20140204
+* Add Rubinius 2.2.4
+* Update libyaml to version 0.1.5
+
+Note: If Psych::LIBYAML_VERSION < '0.1.5' you should update and rebuild Ruby.
+For more informaton see CVE-2013-6393.
+
+#### 20140110.1
+* Fix bug in JRuby 1.7.10 definition
+
+#### 20140110
+* Add JRuby 1.7.10
+* Add Rubinius 2.2.2
+* Add Rubinius 2.2.3
+
 #### 20131225.1
 * Fix typos in Ruby 2.1.0, 2.1.0-dev, and 2.2.0-dev definitions
 
 #### 20131225
-* Add Ruby 2.2.0-dev
-* Add Ruby 2.1.0
-* Update Ruby 2.1.0-dev git branch
-* Add Ruby 1.9.2-p326
 * Add Ruby 1.8.7-p375
+* Add Ruby 1.9.2-p326
+* Update Ruby 2.1.0-dev git branch
+* Add Ruby 2.1.0
+* Add Ruby 2.2.0-dev
 
 #### 20131220.1
 * Fix JRuby installation on non-BSD systems
@@ -33,6 +48,8 @@
 * Add Ruby 1.9.3-p484
 * Add Ruby 2.0.0-p353
 * Add Ruby 2.1.0-preview2
+* Add Rubinius 2.2.0
+* Add Rubinius 2.2.1
 
 #### 20131115
 * Add JRuby 1.7.7
