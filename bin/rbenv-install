@@ -6,15 +6,16 @@
 #        rbenv install [-f] [-kvp] <definition-file>
 #        rbenv install -l|--list
 #
-#   -l/--list        List all available versions
-#   -f/--force       Install even if the version appears to be installed already
+#   -l/--list          List all available versions
+#   -f/--force         Install even if the version appears to be installed already
+#   -s/--skip-existing Skip if the version appears to be installed already
 #
 #   ruby-build options:
 #
-#   -k/--keep        Keep source tree in $RBENV_BUILD_ROOT after installation
-#                    (defaults to $RBENV_ROOT/sources)
-#   -v/--verbose     Verbose mode: print compilation status to stdout
-#   -p/--patch       Apply a patch from stdin before building
+#   -k/--keep          Keep source tree in $RBENV_BUILD_ROOT after installation
+#                      (defaults to $RBENV_ROOT/sources)
+#   -v/--verbose       Verbose mode: print compilation status to stdout
+#   -p/--patch         Apply a patch from stdin before building
 #
 # For detailed information on installing Ruby versions with
 # ruby-build, including a list of environment variables for adjusting
@@ -23,13 +24,22 @@
 set -e
 [ -n "$RBENV_DEBUG" ] && set -x
 
+if [ -z "$RBENV_ROOT" ]; then
+  RBENV_ROOT="${HOME}/.rbenv"
+fi
+
+# Add `share/ruby-build/` directory from each rbenv plugin to the list of
+# paths where build definitions are looked up.
+shopt -s nullglob
+for plugin_path in "$RBENV_ROOT"/plugins/*/share/ruby-build; do
+  RUBY_BUILD_DEFINITIONS="${RUBY_BUILD_DEFINITIONS}:${plugin_path}"
+done
+export RUBY_BUILD_DEFINITIONS
+shopt -u nullglob
+
 # Provide rbenv completions
 if [ "$1" = "--complete" ]; then
   exec ruby-build --definitions
-fi
-
-if [ -z "$RBENV_ROOT" ]; then
-  RBENV_ROOT="${HOME}/.rbenv"
 fi
 
 # Load shared library functions
@@ -43,7 +53,7 @@ usage() {
 
 definitions() {
   local query="$1"
-  ruby-build --definitions | grep -F "$query" || true
+  ruby-build --definitions | $(type -p ggrep grep | head -1) -F "$query" || true
 }
 
 indent() {
@@ -51,6 +61,7 @@ indent() {
 }
 
 unset FORCE
+unset SKIP_EXISTING
 unset KEEP
 unset VERBOSE
 unset HAS_PATCH
@@ -68,6 +79,9 @@ for option in "${OPTIONS[@]}"; do
     ;;
   "f" | "force" )
     FORCE=true
+    ;;
+  "s" | "skip-existing" )
+    SKIP_EXISTING=true
     ;;
   "k" | "keep" )
     [ -n "${RBENV_BUILD_ROOT}" ] || RBENV_BUILD_ROOT="${RBENV_ROOT}/sources"
@@ -128,14 +142,21 @@ PREFIX="${RBENV_ROOT}/versions/${VERSION_NAME}"
 
 # If the installation prefix exists, prompt for confirmation unless
 # the --force option was specified.
-if [ -z "$FORCE" ] && [ -d "${PREFIX}/bin" ]; then
-  echo "rbenv: $PREFIX already exists" >&2
-  read -p "continue with installation? (y/N) "
+if [ -d "${PREFIX}/bin" ]; then
+  if [ -z "$FORCE" ] && [ -z "$SKIP_EXISTING" ]; then
+    echo "rbenv: $PREFIX already exists" >&2
+    read -p "continue with installation? (y/N) "
 
-  case "$REPLY" in
-  y* | Y* ) ;;
-  * ) exit 1 ;;
-  esac
+    case "$REPLY" in
+    y* | Y* ) ;;
+    * ) exit 1 ;;
+    esac
+  elif [ -n "$SKIP_EXISTING" ]; then
+    # Since we know the ruby version is already installed, and are opting to
+    # not force installation of existing versions, we just `exit 0` here to
+    # leave things happy
+    exit 0
+  fi
 fi
 
 # If RBENV_BUILD_ROOT is set, always pass keep options to ruby-build.
@@ -174,17 +195,25 @@ ruby-build $KEEP $VERBOSE $HAS_PATCH "$DEFINITION" "$PREFIX" || STATUS="$?"
 # Display a more helpful message if the definition wasn't found.
 if [ "$STATUS" == "2" ]; then
   { candidates="$(definitions "$DEFINITION")"
+    here="$(dirname "${0%/*}")"
     if [ -n "$candidates" ]; then
       echo
       echo "The following versions contain \`$DEFINITION' in the name:"
       echo "$candidates" | indent
     fi
     echo
-    echo "You can list all available versions with \`rbenv install --list'."
+    echo "See all available versions with \`rbenv install --list'."
     echo
-    echo "If the version you're looking for is not present, first try upgrading"
-    echo "ruby-build. If it's still missing, open a request on the ruby-build"
-    echo "issue tracker: https://github.com/sstephenson/ruby-build/issues"
+    echo -n "If the version you need is missing, try upgrading ruby-build"
+    if [ "$here" != "${here#$(brew --prefix 2>/dev/null)}" ]; then
+      printf ":\n\n"
+      echo "  brew update && brew upgrade ruby-build"
+    elif [ -d "${here}/.git" ]; then
+      printf ":\n\n"
+      echo "  cd ${here} && git pull"
+    else
+      printf ".\n"
+    fi
   } >&2
 fi
 

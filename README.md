@@ -7,6 +7,9 @@ of Ruby on UNIX-like systems.
 You can also use ruby-build without rbenv in environments where you need
 precise control over Ruby version installation.
 
+See the [list of releases](https://github.com/sstephenson/ruby-build/releases)
+for changes in each version.
+
 
 ## Installation
 
@@ -58,12 +61,15 @@ Or, if you would like to install the latest development release:
 
 ## Usage
 
+Before you begin, you should ensure that your build environment has the proper
+system dependencies for compiling the wanted Ruby version (see our [recommendations](https://github.com/sstephenson/ruby-build/wiki#suggested-build-environment)).
+
 ### Using `rbenv install` with rbenv
 
 To install a Ruby version for use with rbenv, run `rbenv install` with the
 exact name of the version you want to install. For example,
 
-    rbenv install 1.9.3-p448
+    rbenv install 2.1.0
 
 Ruby versions will be installed into a directory of the same name under
 `~/.rbenv/versions`.
@@ -81,7 +87,7 @@ locations.
 Run the `ruby-build` command with the exact name of the version you want to
 install and the full path where you want to install it. For example,
 
-    ruby-build 1.9.3-p448 ~/local/ruby-1.9.3-p448
+    ruby-build 2.1.0 ~/local/ruby-2.1.0
 
 To see a list of all available Ruby versions, run `ruby-build --definitions`.
 
@@ -112,6 +118,10 @@ You can set certain environment variables to control the build process.
   choosing.
 * `RUBY_BUILD_SKIP_MIRROR`, if set, forces ruby-build to download packages from
   their original source URLs instead of using a mirror.
+* `RUBY_BUILD_ROOT` overrides the default location from where build definitions
+  in `share/ruby-build/` are looked up.
+* `RUBY_BUILD_DEFINITIONS` can be a list of colon-separated paths that get
+  additionally searched when looking up build definitions.
 * `CC` sets the path to the C compiler.
 * `RUBY_CFLAGS` lets you pass additional options to the default `CFLAGS`. Use
   this to override, for instance, the `-O3` option.
@@ -145,8 +155,8 @@ $ cat fix1.patch fix2.patch | rbenv install --patch 1.9.3-p429
 
 ### Checksum verification
 
-If you have the `md5`, `openssl`, or `md5sum` tool installed, ruby-build will
-automatically verify the MD5 checksum of each downloaded package before
+If you have the `shasum`, `openssl`, or `sha256sum` tool installed, ruby-build will
+automatically verify the SHA2 checksum of each downloaded package before
 installing it.
 
 Checksums are optional and specified as anchors on the package URL in each
@@ -162,9 +172,9 @@ official URL specified in the definition file.
 You can point ruby-build to another mirror by specifying the
 `RUBY_BUILD_MIRROR_URL` environment variable--useful if you'd like to run your
 own local mirror, for example. Package mirror URLs are constructed by joining
-this variable with the MD5 checksum of the package file.
+this variable with the SHA2 checksum of the package file.
 
-If you don't have an MD5 program installed, ruby-build will skip the download
+If you don't have an SHA2 program installed, ruby-build will skip the download
 mirror and use official URLs instead. You can force ruby-build to bypass the
 mirror by setting the `RUBY_BUILD_SKIP_MIRROR` environment variable.
 
